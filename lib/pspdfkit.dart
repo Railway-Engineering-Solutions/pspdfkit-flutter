@@ -127,6 +127,9 @@ class Pspdfkit {
   /// If there were no changes to the document, the document file will not be modified.
   static Future<bool?> save() async => _channel.invokeMethod('save');
 
+  /// Sets the name annotation globally
+  static Future<bool?> setUsername(String username) async => _channel.invokeMethod('setUsername',username);
+
   /// Checks the external storage permission for writing on Android only.
   static Future<bool?> checkAndroidWriteExternalStoragePermission() async {
     return _channel.invokeMethod(
