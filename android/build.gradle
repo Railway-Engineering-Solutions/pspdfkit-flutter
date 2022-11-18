@@ -8,6 +8,7 @@
  */
 buildscript {
     apply from: 'config.gradle'
+    ext.kotlin_version = '1.7.10'
 
     repositories {
         google()
@@ -16,6 +17,7 @@ buildscript {
 
     dependencies {
         classpath "com.android.tools.build:gradle:$androidGradlePluginVersion"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 

@@ -42,6 +42,7 @@ import android.graphics.RectF
 import android.os.Bundle
 import com.pspdfkit.configuration.activity.PdfActivityConfiguration
 import com.pspdfkit.document.processor.PageImage
+import com.pspdfkit.preferences.PSPDFKitPreferences
 import com.pspdfkit.ui.PdfActivity
 import com.pspdfkit.utils.Size
 import java.io.FileInputStream
@@ -379,6 +380,11 @@ internal class PSPDFKitView(
                     .subscribeOn(Schedulers.computation())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(result::success)
+            }
+            "setUsername" -> {
+                val username = requireNotNullNotEmpty(call.argument("username"), "Username")
+                PSPDFKitPreferences.get(context).setAnnotationCreator(username)
+                result.success(true)
             }
             else -> result.notImplemented()
         }
