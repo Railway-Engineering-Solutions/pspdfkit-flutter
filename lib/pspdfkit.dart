@@ -128,7 +128,8 @@ class Pspdfkit {
   static Future<bool?> save() async => _channel.invokeMethod('save');
 
   /// Sets the name annotation globally
-  static Future<bool?> setUsername(String username) async => _channel.invokeMethod('setUsername',username);
+  static Future<bool?> setUsername(String username) async => _channel.invokeMethod('setUsername',
+      <String, String>{'username': username});
 
   /// Checks the external storage permission for writing on Android only.
   static Future<bool?> checkAndroidWriteExternalStoragePermission() async {
