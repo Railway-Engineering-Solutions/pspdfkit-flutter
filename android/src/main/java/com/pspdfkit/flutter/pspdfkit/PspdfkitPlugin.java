@@ -38,6 +38,7 @@ import com.pspdfkit.forms.EditableButtonFormElement;
 import com.pspdfkit.forms.SignatureFormElement;
 import com.pspdfkit.forms.TextFormElement;
 import com.pspdfkit.ui.PdfActivityIntentBuilder;
+import com.pspdfkit.preferences.PSPDFKitPreferences;
 
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -438,6 +439,12 @@ public class PspdfkitPlugin
                         .subscribe(result::success);
 
                 break;
+            case "setUsername":
+                final String username = call.argument("username");
+                PSPDFKitPreferences.get(activity).setAnnotationCreator(username);
+                result.success(true);
+            break;
+
             case "getTemporaryDirectory":
                 result.success(getTemporaryDirectory(activity));
                 break;
