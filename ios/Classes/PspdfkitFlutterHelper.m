@@ -85,6 +85,13 @@
     } else if ([@"exportXfdf" isEqualToString:call.method]) {
         NSString *path = call.arguments[@"xfdfPath"];
         result([PspdfkitFlutterHelper exportXFDFToPath:path forViewController:pdfViewController]);
+    } else if ([@"setUsername" isEqualToString:call.method]) {
+        NSString *username = call.arguments[@"username"];
+        
+        [PSPDFUsernameHelper setDefaultAnnotationUsername: username];
+        
+        result(@(YES));
+        
     } else if ([@"processAnnotations" isEqualToString:call.method]) {
         NSString *type = call.arguments[@"type"];
         NSString *processingMode = call.arguments[@"processingMode"];
