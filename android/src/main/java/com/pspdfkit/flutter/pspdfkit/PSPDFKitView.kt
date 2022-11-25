@@ -38,12 +38,16 @@ import java.io.File
 import android.app.Activity
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.graphics.RectF
 import android.os.Bundle
+import com.pspdfkit.annotations.AnnotationType
+import com.pspdfkit.annotations.configuration.InkAnnotationConfiguration
 import com.pspdfkit.configuration.activity.PdfActivityConfiguration
 import com.pspdfkit.document.processor.PageImage
 import com.pspdfkit.preferences.PSPDFKitPreferences
 import com.pspdfkit.ui.PdfActivity
+import com.pspdfkit.ui.PdfFragment
 import com.pspdfkit.utils.Size
 import java.io.FileInputStream
 
@@ -72,6 +76,7 @@ internal class PSPDFKitView(
         } else {
             val uri = Uri.parse(addFileSchemeIfMissing(documentPath))
             val isImageDocument = isImageDocument(documentPath)
+
             if (isImageDocument) {
                 PdfUiFragmentBuilder.fromImageUri(context, uri).configuration(pdfConfiguration)
                     .build()
@@ -82,7 +87,20 @@ internal class PSPDFKitView(
                     .build()
             }
         }
-
+        pdfUiFragment.pdfFragment?.annotationConfiguration?.put(
+                AnnotationType.INK,
+                InkAnnotationConfiguration.builder(context)
+                        // Here you can specify which color is used when creating ink annotations.
+                        .setDefaultColor(Color.rgb(139, 195, 74))
+                        // Here you can specify which colors are going to be available in the color picker.
+                        .setAvailableColors(
+                                listOf(
+                                        Color.rgb(139, 195, 74), // LIGHT GREEN
+                                )
+                        )
+                        .setForceDefaults(true)
+                        .build()
+        )
         fragmentContainerView?.let {
             it.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
                 override fun onViewAttachedToWindow(view: View?) {
@@ -422,6 +440,7 @@ class PSPDFKitViewFactory(
             messenger,
             creationParams?.get("document") as String?,
             creationParams?.get("configuration") as HashMap<String, Any>?
+
         )
     }
 }
