@@ -14,9 +14,29 @@ import 'package:flutter/services.dart';
     'Import the new PspdfkitWidgetController from `package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart` instead.')
 class PspdfkitWidgetController {
   final MethodChannel _channel;
+  final ValueChanged<int> onPageChanged;
 
-  PspdfkitWidgetController(int id)
-      : _channel = MethodChannel('com.pspdfkit.widget.$id');
+  PspdfkitWidgetController(int id, {this.onPageChanged})
+      : _channel = MethodChannel('com.pspdfkit.widget.$id'){
+    _channel.setMethodCallHandler(_platformCallHandler);
+  }
+
+  Future<void> _platformCallHandler(MethodCall call) {
+    try {
+      switch (call.method) {
+        case 'onPageChanged':
+          if(onPageChanged != null) {
+            onPageChanged(call.arguments);
+          }
+          break;
+        default:
+          print('Unknown method ${call.method} ');
+      }
+    } catch (e) {
+      print(e);
+    }
+    return Future.value();
+  }
 
   /// Sets the value of a form field by specifying its fully qualified field name.
   Future<bool?> setFormFieldValue(

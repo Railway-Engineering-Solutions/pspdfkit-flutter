@@ -27,11 +27,13 @@ class PspdfkitWidget extends StatefulWidget {
   final String? documentPath;
   final dynamic configuration;
   final PspdfkitWidgetCreatedCallback? onPspdfkitWidgetCreated;
+  final ValueChanged<int> onPageChanged;
 
   const PspdfkitWidget(
       {Key? key,
       this.documentPath,
       this.configuration,
+      this.onPageChanged,
       this.onPspdfkitWidgetCreated})
       : super(key: key);
 
@@ -94,7 +96,7 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
   }
 
   Future<void> onPlatformViewCreated(int id) async {
-    controller = PspdfkitWidgetController(id);
+    controller = PspdfkitWidgetController(id, onPageChanged: widget.onPageChanged);
     if (widget.onPspdfkitWidgetCreated != null) {
       widget.onPspdfkitWidgetCreated!(controller);
     }

@@ -88,7 +88,7 @@
             _navigationController.navigationBarHidden = YES;
         }
         [_navigationController setViewControllers:@[_pdfViewController] animated:NO];
-
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(spreadIndexDidChange:) name:PSPDFDocumentViewControllerSpreadIndexDidChangeNotification object:nil];
         __weak id weakSelf = self;
         [_channel setMethodCallHandler:^(FlutterMethodCall * _Nonnull call, FlutterResult  _Nonnull result) {
             [weakSelf handleMethodCall:call result:result];
@@ -120,6 +120,11 @@
 - (void)pdfViewControllerDidDismiss:(PSPDFViewController *)pdfController {
     // Don't hold on to the view controller object after dismissal.
     [self cleanup];
+}
+
+- (void)spreadIndexDidChange:(NSNotification *)notification {
+    long currentPageIndex = [notification.userInfo[@"PSPDFDocumentViewControllerSpreadIndexKey"] longValue];
+    [_channel invokeMethod:@"onPageChanged" arguments:currentPageIndex];
 }
 
 @end
