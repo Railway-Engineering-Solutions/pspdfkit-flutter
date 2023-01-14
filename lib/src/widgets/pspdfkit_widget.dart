@@ -27,7 +27,7 @@ class PspdfkitWidget extends StatefulWidget {
   final String? documentPath;
   final dynamic configuration;
   final PspdfkitWidgetCreatedCallback? onPspdfkitWidgetCreated;
-  final ValueChanged<int> onPageChanged;
+  final ValueChanged<int>? onPageChanged;
 
   const PspdfkitWidget(
       {Key? key,

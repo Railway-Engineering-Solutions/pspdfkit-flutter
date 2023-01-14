@@ -14,7 +14,7 @@ import 'package:flutter/services.dart';
     'Import the new PspdfkitWidgetController from `package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart` instead.')
 class PspdfkitWidgetController {
   final MethodChannel _channel;
-  final ValueChanged<int> onPageChanged;
+  final ValueChanged<int>? onPageChanged;
 
   PspdfkitWidgetController(int id, {this.onPageChanged})
       : _channel = MethodChannel('com.pspdfkit.widget.$id'){
@@ -26,7 +26,7 @@ class PspdfkitWidgetController {
       switch (call.method) {
         case 'onPageChanged':
           if(onPageChanged != null) {
-            onPageChanged(call.arguments);
+            onPageChanged!(call.arguments as int);
           }
           break;
         default:
