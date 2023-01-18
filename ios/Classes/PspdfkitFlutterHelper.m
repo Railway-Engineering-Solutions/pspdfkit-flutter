@@ -13,7 +13,17 @@
 @implementation PspdfkitFlutterHelper
 
 + (void)processMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result forViewController:(PSPDFViewController *)pdfViewController {
-    if ([@"save" isEqualToString:call.method]) {
+        if ([@"getPageIndex" isEqualToString:call.method]) {
+            PSPDFDocument *document = pdfViewController.document;
+            if (!document || !document.isValid) {
+                result([FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil]);
+                return;
+            }
+            PSPDFPageIndex pageIndex = [pdfViewController pageIndex];
+
+            result([NSNumber numberWithLong:pageIndex]);
+        }
+        else if ([@"save" isEqualToString:call.method]) {
         PSPDFDocument *document = pdfViewController.document;
         if (!document || !document.isValid) {
             result([FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil]);
