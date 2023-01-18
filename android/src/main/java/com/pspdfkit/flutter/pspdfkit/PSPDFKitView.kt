@@ -120,6 +120,9 @@ internal class PSPDFKitView(
         val document = pdfUiFragment.document ?: return
 
         when (call.method) {
+            "getPageIndex" ->{
+                result.success(pdfUiFragment.pageIndex)
+            }
             "applyInstantJson" -> {
                 val annotationsJson: String? = call.argument("annotationsJson")
                 val documentJsonDataProvider = DocumentJsonDataProvider(

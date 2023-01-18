@@ -99,4 +99,6 @@ class PspdfkitWidgetController {
   /// Saves the document back to its original location if it has been changed.
   /// If there were no changes to the document, the document file will not be modified.
   Future<bool?> save() async => _channel.invokeMethod('save');
+
+  Future<int?> getPageIndex() async => _channel.invokeMethod('getPageIndex');
 }
