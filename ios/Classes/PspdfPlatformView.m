@@ -124,7 +124,7 @@
 
 - (void)spreadIndexDidChange:(NSNotification *)notification {
     long currentPageIndex = [notification.userInfo[@"PSPDFDocumentViewControllerSpreadIndexKey"] longValue];
-    [_channel invokeMethod:@"onPageChanged" arguments:currentPageIndex];
+    [_channel invokeMethod:@"onPageChanged" arguments:[NSNumber numberWithLong:currentPageIndex]];
 }
 
 @end
