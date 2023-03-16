@@ -18,10 +18,6 @@ import com.pspdfkit.forms.EditableButtonFormElement
 import com.pspdfkit.forms.SignatureFormElement
 import com.pspdfkit.forms.TextFormElement
 import com.pspdfkit.ui.PdfUiFragment
-import com.pspdfkit.document.processor.PdfProcessor
-import com.pspdfkit.document.processor.PdfProcessorTask
-import com.pspdfkit.document.processor.NewPage
-import com.pspdfkit.document.processor.PagePattern
 import com.pspdfkit.ui.PdfUiFragmentBuilder
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
@@ -62,6 +58,7 @@ internal class PSPDFKitView(
         fragmentContainerView?.id = View.generateViewId()
         methodChannel = MethodChannel(messenger, "com.pspdfkit.widget.$id")
         methodChannel.setMethodCallHandler(this)
+
         val configurationAdapter = ConfigurationAdapter(context, configurationMap)
         val password = configurationAdapter.password
         val pdfConfiguration = configurationAdapter.build()
@@ -85,14 +82,14 @@ internal class PSPDFKitView(
 
         fragmentContainerView?.let {
             it.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
-                override fun onViewAttachedToWindow(view: View?) {
+                override fun onViewAttachedToWindow(view: View) {
                   getFragmentActivity(context).supportFragmentManager.commit {
                         add(it.id, pdfUiFragment)
                         setReorderingAllowed(true)
                     }
                 }
 
-                override fun onViewDetachedFromWindow(view: View?) {
+                override fun onViewDetachedFromWindow(view: View) {
                     getFragmentActivity(context).supportFragmentManager.commit {
                         remove(pdfUiFragment)
                         setReorderingAllowed(true)
