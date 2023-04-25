@@ -13,9 +13,16 @@ import 'package:flutter/services.dart';
 class PspdfkitWidgetController {
   final MethodChannel _channel;
   final ValueChanged<int>? onPageChanged;
+  final ValueChanged<dynamic>? onCreateAnnotation;
+  final ValueChanged<dynamic>? onChangeAnnotation;
+  final ValueChanged<dynamic>? onDeleteAnnotation;
 
-  PspdfkitWidgetController(int id, {this.onPageChanged})
-      : _channel = MethodChannel('com.pspdfkit.widget.$id'){
+  PspdfkitWidgetController(int id,
+      {this.onPageChanged,
+      this.onCreateAnnotation,
+      this.onChangeAnnotation,
+      this.onDeleteAnnotation})
+      : _channel = MethodChannel('com.pspdfkit.widget.$id') {
     _channel.setMethodCallHandler(_platformCallHandler);
   }
 
@@ -23,8 +30,23 @@ class PspdfkitWidgetController {
     try {
       switch (call.method) {
         case 'onPageChanged':
-          if(onPageChanged != null) {
+          if (onPageChanged != null) {
             onPageChanged!(call.arguments as int);
+          }
+          break;
+        case 'onCreateAnnotation':
+          if (onCreateAnnotation != null) {
+            onCreateAnnotation!(call.arguments as int);
+          }
+          break;
+        case 'onChangeAnnotation':
+          if (onChangeAnnotation != null) {
+            onChangeAnnotation!(call.arguments);
+          }
+          break;
+        case 'onDeleteAnnotation':
+          if (onDeleteAnnotation != null) {
+            onDeleteAnnotation!(call.arguments);
           }
           break;
         default:
@@ -35,6 +57,7 @@ class PspdfkitWidgetController {
     }
     return Future.value();
   }
+
   /// Sets the value of a form field by specifying its fully qualified field name.
   Future<bool?> setFormFieldValue(
           String value, String fullyQualifiedName) async =>

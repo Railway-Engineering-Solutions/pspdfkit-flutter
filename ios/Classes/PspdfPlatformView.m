@@ -89,6 +89,11 @@
         }
         [_navigationController setViewControllers:@[_pdfViewController] animated:NO];
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(spreadIndexDidChange:) name:PSPDFDocumentViewControllerSpreadIndexDidChangeNotification object:nil];
+        
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(onCreateAnnotation:) name:PSPDFAnnotationsAddedNotification object:nil];
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(onChangeAnnotation:) name:PSPDFAnnotationChangedNotification object:nil];
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(onDeleteAnnotation:) name:PSPDFAnnotationsRemovedNotification object:nil];
+        
         __weak id weakSelf = self;
         [_channel setMethodCallHandler:^(FlutterMethodCall * _Nonnull call, FlutterResult  _Nonnull result) {
             [weakSelf handleMethodCall:call result:result];
@@ -127,4 +132,15 @@
     [_channel invokeMethod:@"onPageChanged" arguments:[NSNumber numberWithLong:currentPageIndex]];
 }
 
+- (void)onCreateAnnotation:(NSNotification *)notification {
+    [_channel invokeMethod:@"onCreateAnnotation" arguments: [notification object]];
+}
+
+- (void)onChangeAnnotation:(NSNotification *)notification {
+    [_channel invokeMethod:@"onChangeAnnotation" arguments: [notification object]];
+}
+
+- (void)onDeleteAnnotation:(NSNotification *)notification {
+    [_channel invokeMethod:@"onDeleteAnnotation" arguments: [notification object]];
+}
 @end
