@@ -25,12 +25,18 @@ class PspdfkitWidget extends StatefulWidget {
   final dynamic configuration;
   final PspdfkitWidgetCreatedCallback? onPspdfkitWidgetCreated;
   final ValueChanged<int>? onPageChanged;
+  final ValueChanged<dynamic>? onCreateAnnotation;
+  final ValueChanged<dynamic>? onChangeAnnotation;
+  final ValueChanged<dynamic>? onDeleteAnnotation;
 
   const PspdfkitWidget(
       {Key? key,
       this.documentPath,
       this.configuration,
       this.onPageChanged,
+      this.onCreateAnnotation,
+      this.onChangeAnnotation,
+      this.onDeleteAnnotation,
       this.onPspdfkitWidgetCreated})
       : super(key: key);
 
@@ -95,7 +101,11 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
   }
 
   Future<void> onPlatformViewCreated(int id) async {
-    controller = PspdfkitWidgetController(id, onPageChanged: widget.onPageChanged);
+    controller = PspdfkitWidgetController(id,
+        onPageChanged: widget.onPageChanged,
+        onCreateAnnotation: widget.onCreateAnnotation,
+        onChangeAnnotation: widget.onChangeAnnotation,
+        onDeleteAnnotation: widget.onDeleteAnnotation);
     if (widget.onPspdfkitWidgetCreated != null) {
       widget.onPspdfkitWidgetCreated!(controller);
     }
