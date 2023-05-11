@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -8,7 +8,9 @@
 ///
 
 import 'dart:async';
+
 import 'package:flutter/services.dart';
+import 'package:pspdfkit_flutter/pspdfkit.dart';
 
 class PspdfkitWidgetController {
   final MethodChannel _channel;
@@ -124,4 +126,24 @@ class PspdfkitWidgetController {
   Future<bool?> save() async => _channel.invokeMethod('save');
 
   Future<int?> getPageIndex() async => _channel.invokeMethod('getPageIndex');
+
+  /// Sets the measurement scale of the document.
+  /// The scale is used to convert between real world measurements and points.
+  /// The default scale is 1 inch = 1 inch.
+  /// @param scale The scale to be used for the document.
+  /// @return True if the scale was set successfully, false otherwise.
+  Future<bool?> setMeasurementScale(MeasurementScale scale) async =>
+      _channel.invokeMethod('setMeasurementScale', <String, dynamic>{
+        'measurementScale': scale.toMap(),
+      });
+
+  /// Sets the measurement precision of the document.
+  /// The precision is used to round the measurement values.
+  /// The default precision is 2 decimal places.
+  /// @param precision The precision to be used for the document.
+  /// @return True if the precision was set successfully, false otherwise.
+  Future<bool?> setMeasurementPrecision(MeasurementPrecision precision) async =>
+      _channel.invokeMethod('setMeasurementPrecision', <String, dynamic>{
+        'measurementPrecision': precision.name,
+      });
 }

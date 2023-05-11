@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -9,30 +9,24 @@
 library pspdfkit;
 
 import 'dart:async';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'dart:io';
-import 'package:flutter/material.dart';
 
-part 'src/processor/pdf_image_page.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 part 'android_permission_status.dart';
-
 part 'configuration_options.dart';
-
-part 'src/processor/new_page.dart';
-
-part 'src/processor/page_pattern.dart';
-
-part 'src/processor/page_position.dart';
-
-part 'src/processor/page_z_order.dart';
-
-part 'src/processor/pdf_page.dart';
-
-part 'src/processor/page_size.dart';
-
 part 'pspdfkit_processor.dart';
+part 'src/measurements/measurement_precision.dart';
+part 'src/measurements/measurement_scale.dart';
+part 'src/processor/new_page.dart';
+part 'src/processor/page_pattern.dart';
+part 'src/processor/page_position.dart';
+part 'src/processor/page_size.dart';
+part 'src/processor/page_z_order.dart';
+part 'src/processor/pdf_image_page.dart';
+part 'src/processor/pdf_page.dart';
 
 /// PSPDFKit plugin to load PDF and image documents on both platform iOS and Android.
 class Pspdfkit {
@@ -65,10 +59,14 @@ class Pspdfkit {
 
   /// Loads a [document] with a supported format using a given [configuration].
   static Future<bool?> present(String document,
-          [dynamic configuration]) async =>
+          {dynamic configuration,
+          MeasurementScale? measurementScale,
+          MeasurementPrecision? measurementPrecision}) async =>
       await _channel.invokeMethod('present', <String, dynamic>{
         'document': document,
-        'configuration': configuration
+        'configuration': configuration,
+        'measurementScale': measurementScale?.toMap(),
+        'measurementPrecision': measurementPrecision?.name,
       });
 
   /// Loads an Instant document from a server [serverUrl] with using a[jwt] in a native Instant PDFViewer.
@@ -168,8 +166,28 @@ class Pspdfkit {
       _channel.invokeMethod('syncAnnotations');
 
   /// Sets the name annotation globally
-  static Future<bool?> setUsername(String username) async => _channel.invokeMethod('setUsername',
-      <String, String>{'username': username});
+  static Future<bool?> setUsername(String username) async => _channel
+      .invokeMethod('setUsername', <String, String>{'username': username});
+
+  /// Sets the measurement scale of the document.
+  /// The scale is used to convert between real world measurements and points.
+  /// The default scale is 1 inch = 1 inch.
+  /// @param scale The scale to be used for the document.
+  /// @return True if the scale was set successfully, false otherwise.
+  Future<bool?> setMeasurementScale(MeasurementScale scale) async =>
+      _channel.invokeMethod('setMeasurementScale', <String, dynamic>{
+        'measurementScale': scale.toMap(),
+      });
+
+  /// Sets the measurement precision of the document.
+  /// The precision is used to round the measurement values.
+  /// The default precision is 2 decimal places.
+  /// @param precision The precision to be used for the document.
+  /// @return True if the precision was set successfully, false otherwise.
+  Future<bool?> setMeasurementPrecision(MeasurementPrecision precision) async =>
+      _channel.invokeMethod('setMeasurementPrecision', <String, dynamic>{
+        'measurementPrecision': precision.name,
+      });
 
   /// Checks the external storage permission for writing on Android only.
   static Future<bool?> checkAndroidWriteExternalStoragePermission() async {
