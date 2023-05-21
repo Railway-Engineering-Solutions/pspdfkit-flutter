@@ -92,10 +92,10 @@
         [_navigationController setViewControllers:@[_pdfViewController] animated:NO];
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(spreadIndexDidChange:) name:PSPDFDocumentViewControllerSpreadIndexDidChangeNotification object:nil];
         
-        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(onCreateAnnotation:) name:PSPDFAnnotationsAddedNotification object:nil];
-        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(onChangeAnnotation:) name:PSPDFAnnotationChangedNotification object:nil];
-        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(onDeleteAnnotation:) name:PSPDFAnnotationsRemovedNotification object:nil];
-        
+//        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(onCreateAnnotation:) name:PSPDFAnnotationsAddedNotification object:nil];
+//        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(onChangeAnnotation:) name:PSPDFAnnotationChangedNotification object:nil];
+//        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(onDeleteAnnotation:) name:PSPDFAnnotationsRemovedNotification object:nil];
+//
         __weak id weakSelf = self;
         [_channel setMethodCallHandler:^(FlutterMethodCall * _Nonnull call, FlutterResult  _Nonnull result) {
             [weakSelf handleMethodCall:call result:result];
