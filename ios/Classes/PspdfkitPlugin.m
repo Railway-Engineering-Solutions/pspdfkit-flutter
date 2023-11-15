@@ -47,9 +47,7 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
     }else if ([@"present" isEqualToString:call.method]) {
         
         NSString *documentPath = call.arguments[@"document"];
-        
-      
-      
+
         if (documentPath == nil || documentPath.length <= 0) {
             FlutterError *error = [FlutterError errorWithCode:@"" message:@"Document path may not be nil or empty." details:nil];
             result(error);
@@ -110,9 +108,9 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
         PSPDFConfiguration *configuration = [PspdfkitFlutterConverter configuration:configurationDictionary isImageDocument:false];
         InstantDocumentInfo *documentInfo = [[InstantDocumentInfo alloc] initWithServerURL:serverUrl url:serverUrl jwt:jwt];
         
-        InstantDocumentViewController *instantViewController = [[InstantDocumentViewController alloc] initWithDocumentInfo:documentInfo configurations:[configuration configurationUpdatedWithBuilder:^(PSPDFConfigurationBuilder * builder) {
+        InstantDocumentViewController *instantViewController = [[InstantDocumentViewController alloc] initWithDocumentInfo:documentInfo configurations:[(PSPDFBaseConfiguration *) configuration configurationUpdatedWithBuilder:^(PSPDFConfigurationBuilder *builder) {
             // Add `PSPDFAnnotationStringInstantCommentMarker` to the `editableAnnotationTypes` to enable editing of Instant Comments.
-            if(enableInstantComments){
+            if (enableInstantComments) {
                 NSMutableSet *editableAnnotationTypes = [builder.editableAnnotationTypes mutableCopy];
                 [editableAnnotationTypes addObject:PSPDFAnnotationStringInstantCommentMarker];
                 builder.editableAnnotationTypes = editableAnnotationTypes;
@@ -128,6 +126,9 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
         
     } else if ([@"getTemporaryDirectory" isEqualToString:call.method]) {
         result([self getTemporaryDirectory]);
+    }else if ([@"setAnnotationPresetConfigurations" isEqualToString:call.method]) {
+        [AnnotationsPresetConfigurations setConfigurationsWithAnnotationPreset:call.arguments[@"annotationConfigurations"]];
+        result(nil);
     } else {
         [PspdfkitFlutterHelper processMethodCall:call result:result forViewController:self.pdfViewController];
     }
@@ -179,8 +180,6 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
 }
 
 - (void)pdfViewControllerDidDismiss:(PSPDFViewController *)pdfController {
-    // Don't hold on to the view controller object after dismissal.
-    self.pdfViewController = nil;
     [channel invokeMethod:@"pdfViewControllerDidDismiss" arguments:nil];
 }
 
@@ -234,6 +233,10 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
         @"error": error.localizedDescription
     };
     [channel invokeMethod:@"pspdfkitInstantDownloadFailed" arguments:arguments];
+}
+
+- (void)dealloc {
+    self.pdfViewController = nil;
 }
 
 @end
