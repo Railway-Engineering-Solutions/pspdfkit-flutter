@@ -1,0 +1,63 @@
+///
+///  Copyright © 2024 PSPDFKit GmbH. All rights reserved.
+///
+///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
+///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
+///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
+///  This notice may not be removed from this file.
+///
+
+enum AnnotationToolbarItem {
+  markup,
+  writing,
+  highlight,
+  squiggly,
+  strikeout,
+  underline,
+  freeText,
+  freeTextCallout,
+  signature,
+  pen,
+  highlighter,
+  note,
+  drawing,
+  multimedia,
+  image,
+  camera,
+  stamp,
+  line,
+  arrow,
+  square,
+  circle,
+  polygon,
+  polyline,
+  eraser,
+  redaction,
+  magicInk,
+  measurement,
+  distance,
+  perimeter,
+  areaPolygon,
+  areaSquare,
+  areaCircle,
+  scaleCalibration,
+  link,
+  cloudy,
+  cloudySquare,
+  cloudyCircle,
+  cloudyPolygon,
+  dashed,
+  dashedSquare,
+  dashedCircle,
+  dashedPolygon,
+  sound,
+  instantCommentMarker,
+  instantHighlightComment,
+  markupTool,
+  screen,
+  caret,
+  widget,
+  trapNet,
+  watermark,
+  file,
+}

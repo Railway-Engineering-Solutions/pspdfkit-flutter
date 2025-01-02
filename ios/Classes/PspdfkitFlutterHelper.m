@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2018-2024 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -7,9 +7,12 @@
 //  This notice may not be removed from this file.
 //
 #import "PspdfkitFlutterHelper.h"
+#include <objc/NSObjCRuntime.h>
+#include <Foundation/Foundation.h>
 #import "PspdfkitFlutterConverter.h"
 #import "pspdfkit_flutter-Swift.h"
 
+#warning "This file is deprecated. Use PspddfkitHelper.swift instead."
 
 @implementation PspdfkitFlutterHelper
 
@@ -173,49 +176,57 @@
             message:@"syncAnnotations can only be called on Instant document"
             details:nil]);
         }
-    } else if ([@"setMeasurementScale" isEqualToString:call.method]){
-       
-        PSPDFDocument *document = pdfViewController.document;
-        
-        if (!document || !document.isValid) {
-            result([FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil]);
-            return;
-        }
-        
-        NSDictionary *scale  = call.arguments[@"measurementScale"];
-        PSPDFMeasurementScale *measurementScale = [PspdfkitMeasurementConvertor convertScaleWithMeasurement:scale];
-     
-        if(!measurementScale){
-            result([FlutterError errorWithCode:@"" message:@"Measurement scale is invalid." details:nil]);
-            return;
-        }
-        
-        document.measurementScale = measurementScale;
-        
-    } else if ([@"setMeasurementPrecision" isEqualToString:call.method]){
-        
-        PSPDFDocument *document = pdfViewController.document;
-        
-        if (!document || !document.isValid) {
-            result([FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil]);
-            return;
-        }
-        
-        NSString *precision  = call.arguments[@"measurementPrecision"];
-        
-        PSPDFMeasurementPrecision measurementPrecision = [PspdfkitMeasurementConvertor convertPrecisionWithPrecision:precision];
-        
-        if(!measurementPrecision){
-            result([FlutterError errorWithCode:@"" message:@"Measurement precision is invalid." details:nil]);
-            return;
-        }
-        
-        document.measurementPrecision = measurementPrecision;
-        
-    }else if ([@"setAnnotationPresetConfigurations" isEqualToString:call.method]) {
+    }else if ([@"setAnnotationConfigurations" isEqualToString:call.method]) {
         [AnnotationsPresetConfigurations setConfigurationsWithAnnotationPreset:call.arguments[@"annotationConfigurations"]];
         result(nil);
-    } else {
+    } else if ([@"getPageInfo" isEqualToString:call.method]) {
+        NSInteger pageIndex = [call.arguments[@"pageIndex"] integerValue];
+        PSPDFPageInfo *pageInfo = [pdfViewController.document pageInfoForPageAtIndex:pageIndex];
+        NSDictionary *pageInfoDictionary = @{
+            @"width": @(pageInfo.size.width),
+            @"height": @(pageInfo.size.height),
+            @"rotation": @(pageInfo.savedRotation),
+            @"index": @(pageIndex),
+            @"label": @""
+        };
+        result(pageInfoDictionary);
+    } else if ([@"exportPdf" isEqualToString:call.method]) {
+        @try {
+            NSString *filePath = pdfViewController.document.fileURL.path;
+            NSData *data = [NSData dataWithContentsOfFile:filePath];
+            const uint8_t *bytes = (const uint8_t *)[data bytes];
+            NSUInteger length = [data length];
+            NSMutableArray *byteArray = [NSMutableArray arrayWithCapacity:length];
+            for (NSUInteger i = 0; i < length; i++) {
+                [byteArray addObject:@(bytes[i])];
+            }
+            result(byteArray);
+        } @catch (NSException *exception) {
+            result([FlutterError errorWithCode:@"" message:exception.reason details:nil]);
+        }
+        
+    } else if ([@"getFormFields" isEqualToString:call.method]) {
+        NSArray<PSPDFFormElement *> *formFields = pdfViewController.document.formParser.forms;
+        NSArray<NSDictionary *>  *formFieldsJson = [FormHelper convertFormFieldsWithFormFields:formFields];
+        result(formFieldsJson);
+    } else if ([@"getVisibleRect" isEqualToString:call.method]) {
+        CGRect visibleRect = [pdfViewController.viewState viewPort];
+        NSDictionary *visibleRectDictionary = @{
+            @"left": @(visibleRect.origin.x),
+            @"top": @(visibleRect.origin.y),
+            @"width": @(visibleRect.size.width),
+            @"height": @(visibleRect.size.height)
+        };
+        result(visibleRectDictionary);        
+    } else if ([@"zoomToRect" isEqualToString:call.method]) {
+        NSInteger pageIndex = [call.arguments[@"pageIndex"] integerValue];
+        NSDictionary *rect = call.arguments[@"rect"];
+        CGRect rectToZoom = CGRectMake([rect[@"left"] doubleValue], [rect[@"top"] doubleValue], [rect[@"width"] doubleValue], [rect[@"height"] doubleValue]);
+        [pdfViewController.documentViewController zoomToPDFRect:rectToZoom forPageAtIndex:pageIndex animated:YES];
+        result(nil);
+    } else if ([@"getZoomScale" isEqualToString:call.method]) {
+        result(FlutterMethodNotImplemented);
+    }else {
         result(FlutterMethodNotImplemented);
     }
 }

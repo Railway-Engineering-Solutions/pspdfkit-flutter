@@ -1,6 +1,5 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pspdfkit_flutter/widgets/pspdfkit_widget.dart';
-import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 
 class PspdfkitMeasurementsExample extends StatefulWidget {
@@ -16,39 +15,46 @@ class PspdfkitMeasurementsExample extends StatefulWidget {
 
 class _PspdfkitMeasurementsExampleState
     extends State<PspdfkitMeasurementsExample> {
-  late PspdfkitWidgetController _controller;
+  late MeasurementValueConfiguration _measurementValueConfiguration;
+
+  @override
+  void initState() {
+    var scale = MeasurementScale(
+        unitFrom: UnitFrom.inch,
+        valueFrom: 1.0,
+        unitTo: UnitTo.cm,
+        valueTo: 2.54);
+    var precision = MeasurementPrecision.fourDP;
+    _measurementValueConfiguration = MeasurementValueConfiguration(
+        name: 'Custom Scale', scale: scale, precision: precision);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('PSPDFKit Measurement Tools'),
-        ),
-        body: Stack(
-          children: [
-            PspdfkitWidget(
+        body: SafeArea(
+      child: Column(
+        children: [
+          Flexible(
+            child: PspdfkitWidget(
               documentPath: widget.documentPath,
-              configuration: const {
-                pageMode: 'single',
-              },
-              onPspdfkitWidgetCreated: (view) {
-                setState(() {
-                  _controller = view;
-                });
-              },
+              configuration: PdfConfiguration(
+                  measurementValueConfigurations: [
+                    _measurementValueConfiguration
+                  ],
+                  pageLayoutMode: PspdfkitPageLayoutMode.single,
+                  webConfiguration: kIsWeb
+                      ? PdfWebConfiguration(toolbarItems: [
+                          ...Pspdfkit.defaultWebToolbarItems,
+                          PspdfkitWebToolbarItem(
+                              type: PspdfkitWebToolbarItemType.measurements)
+                        ])
+                      : null),
             ),
-          ],
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: FloatingActionButton.extended(
-            onPressed: () {
-              _controller.setMeasurementPrecision(MeasurementPrecision.fourDP);
-              _controller.setMeasurementScale(MeasurementScale(
-                  unitFrom: UnitFrom.cm,
-                  valueFrom: 1.0,
-                  unitTo: UnitTo.m,
-                  valueTo: 100.0));
-            },
-            label: const Text('Set Measurement Scale & Precision')));
+          ),
+        ],
+      ),
+    ));
   }
 }

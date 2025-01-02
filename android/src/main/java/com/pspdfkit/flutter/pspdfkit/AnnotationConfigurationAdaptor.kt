@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2018-2024 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -13,7 +13,22 @@ import android.content.Context
 import android.graphics.Color
 import androidx.core.util.Pair
 import com.pspdfkit.annotations.AnnotationType
-import com.pspdfkit.annotations.AnnotationType.*
+import com.pspdfkit.annotations.AnnotationType.CIRCLE
+import com.pspdfkit.annotations.AnnotationType.FILE
+import com.pspdfkit.annotations.AnnotationType.FREETEXT
+import com.pspdfkit.annotations.AnnotationType.HIGHLIGHT
+import com.pspdfkit.annotations.AnnotationType.INK
+import com.pspdfkit.annotations.AnnotationType.LINE
+import com.pspdfkit.annotations.AnnotationType.NOTE
+import com.pspdfkit.annotations.AnnotationType.POLYGON
+import com.pspdfkit.annotations.AnnotationType.POLYLINE
+import com.pspdfkit.annotations.AnnotationType.REDACT
+import com.pspdfkit.annotations.AnnotationType.SOUND
+import com.pspdfkit.annotations.AnnotationType.SQUARE
+import com.pspdfkit.annotations.AnnotationType.SQUIGGLY
+import com.pspdfkit.annotations.AnnotationType.STAMP
+import com.pspdfkit.annotations.AnnotationType.STRIKEOUT
+import com.pspdfkit.annotations.AnnotationType.UNDERLINE
 import com.pspdfkit.annotations.LineEndType
 import com.pspdfkit.annotations.configuration.AnnotationConfiguration
 import com.pspdfkit.annotations.configuration.AnnotationProperty
@@ -33,10 +48,11 @@ import com.pspdfkit.annotations.configuration.SoundAnnotationConfiguration
 import com.pspdfkit.annotations.configuration.StampAnnotationConfiguration
 import com.pspdfkit.annotations.stamps.StampPickerItem
 import com.pspdfkit.configuration.annotations.AnnotationAggregationStrategy
-import com.pspdfkit.flutter.pspdfkit.util.MeasurementHelper
+import com.pspdfkit.flutter.pspdfkit.annotations.FlutterAnnotationPresetConfiguration
 import com.pspdfkit.ui.fonts.Font
 import com.pspdfkit.ui.inspector.views.BorderStylePreset
 import com.pspdfkit.ui.special_mode.controller.AnnotationTool
+import com.pspdfkit.ui.special_mode.controller.AnnotationToolVariant
 import java.util.EnumSet
 
 const val DEFAULT_COLOR = "color"
@@ -69,8 +85,6 @@ const val MIN_TEXT_SIZE = "minimumFontSize"
 const val MAX_TEXT_SIZE = "maximumFontSize"
 const val DEFAULT_FONT = "fontName"
 const val AVAILABLE_FONTS = "availableFonts"
-const val DEFAULT_SCALE = "defaultScale"
-const val DEFAULT_PRECISION = "defaultPrecision"
 const val OVERLAY_TEXT = "overlayText"
 const val REPEAT_OVERLAY_TEXT = "repeatOverlayText"
 
@@ -108,12 +122,12 @@ class AnnotationConfigurationAdaptor {
 
     companion object {
 
-        private val configurations = mutableMapOf<AnnotationType, AnnotationConfiguration>()
+        private val configurationsList:MutableList<FlutterAnnotationPresetConfiguration> = mutableListOf()
 
         @JvmStatic
         fun convertAnnotationConfigurations(
             context: Context, annotationConfigurations: Map<*, *>
-        ): Map<AnnotationType, AnnotationConfiguration> {
+        ): List<FlutterAnnotationPresetConfiguration> {
 
             val iterator = annotationConfigurations.keys.iterator()
 
@@ -122,158 +136,115 @@ class AnnotationConfigurationAdaptor {
                 val configuration = (annotationConfigurations[key] as Map<*, *>?) ?: continue
                 when (key) {
                     ANNOTATION_INK_PEN -> {
-                        configurations[INK] =
-                            parseInkAnnotationConfiguration(context, configuration)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(INK, AnnotationTool.INK, AnnotationToolVariant.fromPreset(AnnotationToolVariant.Preset.PEN), parseInkAnnotationConfiguration(context, configuration)))
                     }
 
                     ANNOTATION_INK_HIGHLIGHTER -> {
-                        configurations[AnnotationTool.INK.toAnnotationType()] =
-                            parseInkAnnotationConfiguration(context, configuration)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(INK, AnnotationTool.INK, AnnotationToolVariant.fromPreset(AnnotationToolVariant.Preset.HIGHLIGHTER), parseInkAnnotationConfiguration(context, configuration)))
                     }
 
                     ANNOTATION_INK_MAGIC -> {
-                        configurations[AnnotationTool.MAGIC_INK.toAnnotationType()] =
-                            parseInkAnnotationConfiguration(context, configuration)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(INK, AnnotationTool.MAGIC_INK, AnnotationToolVariant.fromPreset(AnnotationToolVariant.Preset.MAGIC), parseInkAnnotationConfiguration(context, configuration)))
                     }
 
                     ANNOTATION_UNDERLINE -> {
-                        configurations[UNDERLINE] =
-                            parseMarkupAnnotationConfiguration(context, configuration, UNDERLINE)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(UNDERLINE, AnnotationTool.UNDERLINE, null, parseMarkupAnnotationConfiguration(context, configuration, UNDERLINE)))
                     }
 
                     ANNOTATION_FREE_TEXT -> {
-                        configurations[FREETEXT] =
-                            parserFreeTextAnnotationConfiguration(context, configuration)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(FREETEXT, AnnotationTool.FREETEXT, null, parserFreeTextAnnotationConfiguration(context, configuration)))
                     }
 
                     ANNOTATION_LINE -> {
-                        configurations[LINE] =
-                            parseLineAnnotationConfiguration(
-                                context,
-                                configuration,
-                                LINE,
-                                AnnotationTool.LINE
-                            )
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(LINE, AnnotationTool.LINE, null, parseLineAnnotationConfiguration(context, configuration, LINE, AnnotationTool.LINE)))
                     }
 
                     ANNOTATION_NOTE -> {
-                        configurations[NOTE] =
-                            parseNoteAnnotationConfiguration(context, configuration)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(NOTE, AnnotationTool.NOTE, null, parseNoteAnnotationConfiguration(context, configuration)))
                     }
 
                     ANNOTATION_STAMP -> {
-                        configurations[STAMP] =
-                            parseStampAnnotationConfiguration(context, configuration)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(STAMP, AnnotationTool.STAMP, null, parseStampAnnotationConfiguration(context, configuration)))
                     }
 
                     ANNOTATION_FILE -> {
-                        configurations[FILE] =
-                            parseFileAnnotationConfiguration(configuration)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(FILE, null, null, parseFileAnnotationConfiguration(configuration)))
                     }
 
                     ANNOTATION_REDACTION -> {
-                        configurations[REDACT] =
-                            parseRedactAnnotationConfiguration(context, configuration)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(REDACT, null, null, parseRedactAnnotationConfiguration(context, configuration)))
                     }
 
                     ANNOTATION_SOUND -> {
-                        configurations[SOUND] =
-                            parseSoundAnnotationConfiguration(configuration)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(SOUND, null, null, parseSoundAnnotationConfiguration(configuration)))
                     }
 
                     ANNOTATION_HIGHLIGHT -> {
-                        configurations[HIGHLIGHT] =
-                            parseMarkupAnnotationConfiguration(context, configuration, HIGHLIGHT)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(HIGHLIGHT, AnnotationTool.HIGHLIGHT,null, parseMarkupAnnotationConfiguration(context, configuration, HIGHLIGHT)))
                     }
 
                     ANNOTATION_SQUARE -> {
-                        configurations[SQUARE] =
-                            parseShapeAnnotationConfiguration(context, configuration, SQUARE)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(SQUARE, AnnotationTool.SQUARE, null, parseShapeAnnotationConfiguration(context, configuration, SQUARE)))
                     }
 
                     ANNOTATION_CIRCLE -> {
-                        configurations[CIRCLE] =
-                            parseShapeAnnotationConfiguration(context, configuration, CIRCLE)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(CIRCLE, AnnotationTool.CIRCLE, null, parseShapeAnnotationConfiguration(context, configuration, CIRCLE)))
                     }
 
                     ANNOTATION_POLYGON -> {
-                        configurations[POLYGON] =
-                            parseShapeAnnotationConfiguration(context, configuration, POLYGON)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(POLYGON, AnnotationTool.POLYGON, null, parseShapeAnnotationConfiguration(context, configuration, POLYGON)))
                     }
 
                     ANNOTATION_POLYLINE -> {
-                        configurations[POLYLINE] =
-                            parseLineAnnotationConfiguration(
-                                context,
-                                configuration,
-                                POLYLINE,
-                                AnnotationTool.POLYLINE
-                            )
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(POLYLINE, AnnotationTool.POLYLINE, null, parseLineAnnotationConfiguration(context, configuration, POLYLINE, AnnotationTool.POLYLINE)))
                     }
 
                     ANNOTATION_IMAGE -> {
-                        configurations[AnnotationTool.IMAGE.toAnnotationType()] =
-                            parseStampAnnotationConfiguration(context, configuration)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(STAMP, AnnotationTool.IMAGE, null, parseStampAnnotationConfiguration(context, configuration)))
                     }
 
                     ANNOTATION_ARROW -> {
-                        configurations[LINE] =
-                            parseLineAnnotationConfiguration(
-                                context,
-                                configuration,
-                                LINE,
-                                AnnotationTool.LINE
-                            )
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(LINE, AnnotationTool.LINE, AnnotationToolVariant.fromPreset(AnnotationToolVariant.Preset.ARROW), parseLineAnnotationConfiguration(context, configuration, LINE, AnnotationTool.LINE)))
                     }
 
                     ANNOTATION_SQUIGGLY -> {
-                        configurations[SQUIGGLY] =
-                            parseMarkupAnnotationConfiguration(context, configuration, SQUIGGLY)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(SQUIGGLY, AnnotationTool.SQUIGGLY, null, parseMarkupAnnotationConfiguration(context, configuration, SQUIGGLY)))
                     }
 
                     ANNOTATION_STRIKE_OUT -> {
-                        configurations[STRIKEOUT] =
-                            parseMarkupAnnotationConfiguration(context, configuration, STRIKEOUT)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(STRIKEOUT, AnnotationTool.STRIKEOUT, null, parseMarkupAnnotationConfiguration(context, configuration, STRIKEOUT)))
                     }
 
                     ANNOTATION_ERASER -> {
-                        configurations[AnnotationTool.ERASER.toAnnotationType()] =
-                            parseEraserAnnotationConfiguration(configuration)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(null, AnnotationTool.ERASER, null, parseEraserAnnotationConfiguration(configuration)))
                     }
 
                     ANNOTATION_AUDIO -> {
-                        configurations[SOUND] =
-                            parseSoundAnnotationConfiguration(configuration)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(SOUND, null, null, parseSoundAnnotationConfiguration(configuration)))
                     }
 
                     ANNOTATION_FREE_TEXT_CALL_OUT -> {
-                        configurations[AnnotationTool.FREETEXT_CALLOUT.toAnnotationType()] =
-                            parserFreeTextAnnotationConfiguration(context, configuration)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(FREETEXT, AnnotationTool.FREETEXT_CALLOUT, null, parserFreeTextAnnotationConfiguration(context, configuration)))
                     }
 
                     ANNOTATION_MEASUREMENT_AREA_RECT -> {
-                        configurations[AnnotationTool.MEASUREMENT_AREA_RECT.toAnnotationType()] =
-                            parserMeasurementAreaAnnotationConfiguration(context, configuration)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(null, AnnotationTool.MEASUREMENT_AREA_RECT, null, parserMeasurementAreaAnnotationConfiguration(context, configuration)))
                     }
 
                     ANNOTATION_MEASUREMENT_AREA_POLYGON -> {
-                        configurations[AnnotationTool.MEASUREMENT_AREA_POLYGON.toAnnotationType()] =
-                            parserMeasurementAreaAnnotationConfiguration(context, configuration)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(null, AnnotationTool.MEASUREMENT_AREA_POLYGON, null, parserMeasurementAreaAnnotationConfiguration(context, configuration)))
                     }
 
                     ANNOTATION_MEASUREMENT_AREA_ELLIPSE -> {
-                        configurations[AnnotationTool.MEASUREMENT_AREA_ELLIPSE.toAnnotationType()] =
-                            parserMeasurementAreaAnnotationConfiguration(context, configuration)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(null, AnnotationTool.MEASUREMENT_AREA_ELLIPSE, null, parserMeasurementAreaAnnotationConfiguration(context, configuration)))
                     }
 
                     ANNOTATION_MEASUREMENT_PERIMETER -> {
-                        configurations[AnnotationTool.MEASUREMENT_PERIMETER.toAnnotationType()] =
-                            parseMeasurementPerimeterAnnotationConfiguration(context, configuration)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(null, AnnotationTool.MEASUREMENT_PERIMETER, null, parseMeasurementPerimeterAnnotationConfiguration(context, configuration)))
                     }
 
                     ANNOTATION_MEASUREMENT_DISTANCE -> {
-                        configurations[AnnotationTool.MEASUREMENT_DISTANCE.toAnnotationType()] =
-                            parseMeasurementDistanceConfiguration(context, configuration)
+                        configurationsList.add(FlutterAnnotationPresetConfiguration(null, AnnotationTool.MEASUREMENT_DISTANCE, null, parseMeasurementDistanceConfiguration(context, configuration)))
                     }
 
                     else -> {
@@ -281,7 +252,7 @@ class AnnotationConfigurationAdaptor {
                     }
                 }
             }
-            return configurations
+            return configurationsList
         }
 
         private fun parserMeasurementAreaAnnotationConfiguration(
@@ -305,21 +276,6 @@ class AnnotationConfigurationAdaptor {
                         builder.setAvailableColors(
                             extractColors(colors.map { it as String })
                         )
-                    }
-
-                    DEFAULT_SCALE -> (configuration[key] as Map<String, Any>?)?.let { scaleObject ->
-                        val scale = MeasurementHelper.convertScale(scaleObject)
-                        if (scale != null) {
-                            builder.setDefaultScale(scale)
-                        }
-                    }
-
-                    DEFAULT_PRECISION -> configuration[key].let { precisionString ->
-                        val precision =
-                            MeasurementHelper.convertPrecision(precisionString as String)
-                        if (precision != null) {
-                            builder.setDefaultPrecision(precision)
-                        }
                     }
 
                     MAX_ALPHA -> builder.setMaxAlpha((configuration[key] as Double).toFloat())
@@ -375,19 +331,6 @@ class AnnotationConfigurationAdaptor {
                         )
                     }
 
-                    DEFAULT_SCALE -> configuration[key].let { scaleObject ->
-                        val scale = MeasurementHelper.convertScale(scaleObject as Map<String, Any>)
-                        if (scale != null)
-                            builder.setDefaultScale(scale)
-                    }
-
-                    DEFAULT_PRECISION -> (configuration[key])?.let { precisionString ->
-                        val precision =
-                            MeasurementHelper.convertPrecision(precisionString as String)
-                        if (precision != null)
-                            builder.setDefaultPrecision(precision)
-                    }
-
                     MAX_ALPHA -> builder.setMaxAlpha((configuration[key] as Double).toFloat())
                     MIN_ALPHA -> builder.setMinAlpha((configuration[key] as Double).toFloat())
                     MAX_THICKNESS -> builder.setMaxThickness((configuration[key] as Double).toFloat())
@@ -439,19 +382,6 @@ class AnnotationConfigurationAdaptor {
                         builder.setAvailableColors(
                             extractColors(colors.map { it as String })
                         )
-                    }
-
-                    DEFAULT_SCALE -> (configuration[key] as Map<String, Any>?)?.let { scaleObject ->
-                        val scale = MeasurementHelper.convertScale(scaleObject)
-                        if (scale != null)
-                            builder.setDefaultScale(scale)
-                    }
-
-                    DEFAULT_PRECISION -> configuration[key].let { precisionString ->
-                        val precision =
-                            MeasurementHelper.convertPrecision(precisionString as String)
-                        if (precision != null)
-                            builder.setDefaultPrecision(precision)
                     }
 
                     DEFAULT_LINE_END -> configuration[key].let { lineEndPair ->

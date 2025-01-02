@@ -1,17 +1,27 @@
+/*
+ * Copyright © 2018-2024 PSPDFKit GmbH. All rights reserved.
+ * <p>
+ * THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
+ * AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
+ * UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
+ * This notice may not be removed from this file.
+ */
+
 package com.pspdfkit.flutter.pspdfkit;
 
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
-import com.pspdfkit.annotations.measurements.MeasurementPrecision;
-import com.pspdfkit.annotations.measurements.Scale;
 import com.pspdfkit.document.PdfDocument;
+import com.pspdfkit.flutter.pspdfkit.util.MeasurementHelper;
 import com.pspdfkit.ui.PdfActivity;
 
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-
 import io.flutter.plugin.common.MethodChannel.Result;
 
 /**
@@ -23,19 +33,14 @@ public class FlutterPdfActivity extends PdfActivity {
     @Nullable private static FlutterPdfActivity currentActivity;
     @NonNull private static final AtomicReference<Result> loadedDocumentResult = new AtomicReference<>();
 
-    @Nullable private static Scale scale;
-    @Nullable private static MeasurementPrecision floatPrecision;
+    @Nullable private  static List<Map<String,Object>> measurementValueConfigurations;
 
     public static void setLoadedDocumentResult(Result result) {
         loadedDocumentResult.set(result);
     }
 
-    public static void setMeasurementScale(@Nullable  final Scale scale) {
-        FlutterPdfActivity.scale = scale;
-    }
-
-    public static void setFloatPrecision(@Nullable final MeasurementPrecision floatPrecision) {
-        FlutterPdfActivity.floatPrecision = floatPrecision;
+    public static void setMeasurementValueConfigurations(@Nullable final List<Map<String,Object>> configurations) {
+        measurementValueConfigurations = configurations;
     }
 
     @Override
@@ -64,13 +69,19 @@ public class FlutterPdfActivity extends PdfActivity {
         if (result != null) {
             result.success(true);
         }
-
-        if (scale != null) {
-            pdfDocument.setMeasurementScale(scale);
+        if (measurementValueConfigurations != null && getPdfFragment() !=null) {
+            for (Map<String, Object> configuration : measurementValueConfigurations) {
+                MeasurementHelper.addMeasurementConfiguration(getPdfFragment(), configuration);
+            }
         }
+        EventDispatcher.getInstance().notifyDocumentLoaded(pdfDocument);
+    }
 
-        if (floatPrecision != null) {
-            pdfDocument.setMeasurementPrecision(floatPrecision);
+    @Override
+    public void onAttachFragment(@NonNull Fragment fragment) {
+        super.onAttachFragment(fragment);
+        if(fragment.getTag() !=null && fragment.getTag().contains("PSPDFKit.Fragment")){
+            EventDispatcher.getInstance().notifyPdfFragmentAdded();
         }
     }
 

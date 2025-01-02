@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2024 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -11,16 +11,14 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:pspdfkit_example/utils/platform_utils.dart';
-
 import 'package:pspdfkit_flutter/pspdfkit.dart';
-import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
-import 'package:pspdfkit_flutter/widgets/pspdfkit_widget.dart';
 
 class PspdfkitAnnotationProcessingExampleWidget extends StatefulWidget {
   final String documentPath;
   final String exportPath;
-  final dynamic configuration;
+  final PdfConfiguration? configuration;
 
   const PspdfkitAnnotationProcessingExampleWidget(
       {Key? key,
@@ -30,7 +28,7 @@ class PspdfkitAnnotationProcessingExampleWidget extends StatefulWidget {
       : super(key: key);
 
   @override
-  _PspdfkitAnnotationProcessingExampleWidgetState createState() =>
+  State<PspdfkitAnnotationProcessingExampleWidget> createState() =>
       _PspdfkitAnnotationProcessingExampleWidgetState();
 }
 
@@ -46,10 +44,10 @@ class _PspdfkitAnnotationProcessingExampleWidgetState
 
   @override
   Widget build(BuildContext context) {
-    if (PlatformUtils.isIOS()) {
-      return CupertinoPageScaffold(
-          navigationBar: const CupertinoNavigationBar(),
-          child: SafeArea(
+    if (PlatformUtils.isIOS() || PlatformUtils.isAndroid()) {
+      return Scaffold(
+          appBar: AppBar(),
+          body: SafeArea(
               bottom: false,
               child: Column(children: <Widget>[
                 Expanded(
@@ -70,7 +68,10 @@ class _PspdfkitAnnotationProcessingExampleWidgetState
                         final exportPath =
                             await getExportPath(widget.exportPath);
                         await view.processAnnotations(
-                            'all', 'flatten', exportPath);
+                          AnnotationType.all,
+                          AnnotationProcessingMode.flatten,
+                          exportPath,
+                        );
                         await Pspdfkit.present(exportPath);
                       },
                       child: const Text('Flatten Annotations')),
@@ -79,7 +80,10 @@ class _PspdfkitAnnotationProcessingExampleWidgetState
                         final exportPath =
                             await getExportPath(widget.exportPath);
                         await view.processAnnotations(
-                            'all', 'remove', exportPath);
+                          AnnotationType.all,
+                          AnnotationProcessingMode.remove,
+                          exportPath,
+                        );
                         await Pspdfkit.present(exportPath);
                       },
                       child: const Text('Remove Annotations')),
@@ -88,7 +92,10 @@ class _PspdfkitAnnotationProcessingExampleWidgetState
                         final exportPath =
                             await getExportPath(widget.exportPath);
                         await view.processAnnotations(
-                            'all', 'embed', exportPath);
+                          AnnotationType.all,
+                          AnnotationProcessingMode.embed,
+                          exportPath,
+                        );
                         await Pspdfkit.present(exportPath);
                       },
                       child: const Text('Embed Annotations')),
@@ -97,7 +104,10 @@ class _PspdfkitAnnotationProcessingExampleWidgetState
                         final exportPath =
                             await getExportPath(widget.exportPath);
                         await view.processAnnotations(
-                            'all', 'print', exportPath);
+                          AnnotationType.all,
+                          AnnotationProcessingMode.print,
+                          exportPath,
+                        );
                         await Pspdfkit.present(exportPath);
                       },
                       child: const Text('Print Annotations'))
